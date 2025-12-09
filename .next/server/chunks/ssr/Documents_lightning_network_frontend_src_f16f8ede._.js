@@ -780,92 +780,46 @@ __turbopack_context__.s([
     "getRecentDonations",
     ()=>getRecentDonations
 ]);
-// --- In-memory mock database ---
-let mockDonations = [
-    {
-        id: "3",
-        donor_name: "Satoshi",
-        amount_sats: 5000,
-        status: "PAID",
-        paid_at: new Date(Date.now() - 1000 * 60 * 5).toISOString()
-    },
-    {
-        id: "2",
-        donor_name: "Hal Finney",
-        amount_sats: 1000,
-        status: "PAID",
-        paid_at: new Date(Date.now() - 1000 * 60 * 30).toISOString()
-    },
-    {
-        id: "1",
-        donor_name: "Anonymous",
-        amount_sats: 2100,
-        status: "PAID",
-        paid_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
+const API_BASE = ("TURBOPACK compile-time value", "http://127.0.0.1:8000");
+async function createInvoice(amount, name) {
+    const res = await fetch(`${API_BASE}/api/create-invoice/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            amount_sats: amount,
+            donor_name: name || "Anonymous"
+        })
+    });
+    if (!res.ok) {
+        throw new Error("Failed to create invoice");
     }
-];
-let pendingInvoice = null;
-let pollCount = 0;
-const delay = (ms)=>new Promise((res)=>setTimeout(res, ms));
-async function createInvoice(amount_sats, donor_name = "Anonymous") {
-    await delay(1000); // Simulate network latency
-    const payment_hash = `mock_payment_hash_${Date.now()}`;
-    const invoiceString = `ln-testnet-invoice-${amount_sats}-${donor_name.replace(/\s/g, "_")}-${payment_hash}`;
-    const newInvoice = {
-        invoice: invoiceString,
-        payment_hash,
-        expires_in: 3600,
-        donor_name,
-        amount_sats
-    };
-    pendingInvoice = newInvoice;
-    pollCount = 0; // Reset poll count for the new invoice
-    return newInvoice;
-}
-async function getInvoiceStatus(payment_hash) {
-    await delay(2000); // Simulate polling delay
-    if (payment_hash !== pendingInvoice?.payment_hash) {
-        // This case handles polling for an old or invalid invoice
-        return {
-            status: "PENDING"
-        };
-    }
-    pollCount++;
-    // Simulate payment success after 2 polls
-    if (pollCount >= 2) {
-        const paid_at = new Date().toISOString();
-        const newDonation = {
-            id: `${mockDonations.length + 1}`,
-            donor_name: pendingInvoice.donor_name || "Anonymous",
-            amount_sats: pendingInvoice.amount_sats,
-            status: "PAID",
-            paid_at
-        };
-        // Add to the top of the list
-        mockDonations.unshift(newDonation);
-        pendingInvoice = null; // Clear pending invoice
-        pollCount = 0;
-        return {
-            status: "PAID",
-            paid_at
-        };
-    }
-    return {
-        status: "PENDING"
-    };
+    return res.json();
 }
 async function getRecentDonations() {
-    await delay(500);
-    // Return the most recent 5 donations
-    return mockDonations.slice(0, 5);
+    const res = await fetch(`${API_BASE}/api/recent-donations/`);
+    if (!res.ok) {
+        return [];
+    }
+    return res.json();
 }
 async function getDonationStats() {
-    await delay(500);
-    const totalSats = mockDonations.reduce((acc, donation)=>acc + donation.amount_sats, 0);
-    return {
-        totalSats,
-        donorCount: mockDonations.length
-    };
+    const res = await fetch(`${API_BASE}/api/donation-stats/`);
+    if (!res.ok) {
+        return {
+            totalSats: 0,
+            donorCount: 0
+        };
+    }
+    return res.json();
+}
+async function getInvoiceStatus(paymentHash) {
+    const res = await fetch(`${API_BASE}/api/invoice-status/${paymentHash}/`);
+    if (!res.ok) {
+        throw new Error("Failed to fetch invoice status");
+    }
+    return res.json();
 }
 }),
 "[project]/Documents/lightning_network/frontend/src/components/invoice-qr.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {
@@ -1459,12 +1413,12 @@ function RecentDonations({ donations }) {
                     children: "Recent Donations"
                 }, void 0, false, {
                     fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                    lineNumber: 24,
+                    lineNumber: 23,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                lineNumber: 23,
+                lineNumber: 22,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1517,34 +1471,34 @@ function RecentDonations({ donations }) {
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Avatar"], {
                                                         className: "h-8 w-8",
                                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AvatarFallback"], {
-                                                            children: donation.donor_name.charAt(0).toUpperCase()
+                                                            children: donation.donor_name ? donation.donor_name.charAt(0).toUpperCase() : "?"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                                            lineNumber: 42,
+                                                            lineNumber: 46,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                                        lineNumber: 41,
+                                                        lineNumber: 45,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         className: "font-medium",
-                                                        children: donation.donor_name
+                                                        children: donation.donor_name || "Anonymous"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                                        lineNumber: 46,
+                                                        lineNumber: 52,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                                lineNumber: 40,
+                                                lineNumber: 44,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                            lineNumber: 39,
+                                            lineNumber: 43,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -1555,34 +1509,34 @@ function RecentDonations({ donations }) {
                                                     className: "h-3 w-3 text-primary"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                                    lineNumber: 51,
+                                                    lineNumber: 61,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                            lineNumber: 49,
+                                            lineNumber: 59,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
                                             className: "hidden sm:table-cell text-right text-muted-foreground",
-                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$date$2d$fns$2f$formatDistanceToNow$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatDistanceToNow"])(new Date(donation.paid_at), {
+                                            children: donation.paid_at ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$Documents$2f$lightning_network$2f$frontend$2f$node_modules$2f$date$2d$fns$2f$formatDistanceToNow$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatDistanceToNow"])(new Date(donation.paid_at), {
                                                 addSuffix: true
-                                            })
+                                            }) : "Waiting for payment"
                                         }, void 0, false, {
                                             fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                            lineNumber: 53,
+                                            lineNumber: 65,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, donation.id, true, {
                                     fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                                    lineNumber: 38,
+                                    lineNumber: 41,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                            lineNumber: 36,
+                            lineNumber: 39,
                             columnNumber: 13
                         }, this)
                     ]
@@ -1595,7 +1549,7 @@ function RecentDonations({ donations }) {
                     children: "No donations yet. Be the first!"
                 }, void 0, false, {
                     fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-                    lineNumber: 61,
+                    lineNumber: 77,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
@@ -1606,7 +1560,7 @@ function RecentDonations({ donations }) {
         ]
     }, void 0, true, {
         fileName: "[project]/Documents/lightning_network/frontend/src/components/recent-donations.tsx",
-        lineNumber: 22,
+        lineNumber: 21,
         columnNumber: 5
     }, this);
 }

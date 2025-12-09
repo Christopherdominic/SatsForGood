@@ -10809,6 +10809,12 @@ const configEnv = ("TURBOPACK compile-time value", {
             "hostname": ("TURBOPACK compile-time value", "picsum.photos"),
             "port": ("TURBOPACK compile-time value", ""),
             "pathname": ("TURBOPACK compile-time value", "/**")
+        }),
+        ("TURBOPACK compile-time value", {
+            "protocol": ("TURBOPACK compile-time value", "https"),
+            "hostname": ("TURBOPACK compile-time value", "api.qrserver.com"),
+            "port": ("TURBOPACK compile-time value", ""),
+            "pathname": ("TURBOPACK compile-time value", "/**")
         })
     ])
 });
@@ -11171,6 +11177,12 @@ function getImageProps(imgProps) {
                 ("TURBOPACK compile-time value", {
                     "protocol": ("TURBOPACK compile-time value", "https"),
                     "hostname": ("TURBOPACK compile-time value", "picsum.photos"),
+                    "port": ("TURBOPACK compile-time value", ""),
+                    "pathname": ("TURBOPACK compile-time value", "/**")
+                }),
+                ("TURBOPACK compile-time value", {
+                    "protocol": ("TURBOPACK compile-time value", "https"),
+                    "hostname": ("TURBOPACK compile-time value", "api.qrserver.com"),
                     "port": ("TURBOPACK compile-time value", ""),
                     "pathname": ("TURBOPACK compile-time value", "/**")
                 })

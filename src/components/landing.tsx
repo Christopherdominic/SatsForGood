@@ -18,11 +18,11 @@ export function Landing({ onDonateNowClick }: LandingProps) {
             SatsForGood
           </h1>
           <p className="mt-6 text-lg leading-8 text-muted-foreground sm:text-xl">
-            Donate small sats. Make a big impact.
+            Donate small sats. Make a big impact. Together we can change the world.
           </p>
           <p className="mt-2 max-w-2xl mx-auto text-sm text-muted-foreground/80">
             This is a demonstration app using the Bitcoin Lightning Network on{" "}
-            <strong>Testnet only</strong>. No real money is used.
+            <strong>Lightning Network</strong>.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button onClick={onDonateNowClick} size="lg">

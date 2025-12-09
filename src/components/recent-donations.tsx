@@ -70,7 +70,9 @@ export function RecentDonations({ donations }: RecentDonationsProps) {
 
                   {/* Status */}
                   <TableCell className="text-right">
-                    <Badge variant={donation.status === "PAID" ? "default" : "secondary"}>
+                    <Badge
+                      variant={donation.status === "PAID" ? "default" : "secondary"}
+                    >
                       {donation.status === "PAID" ? "Paid" : "Pending"}
                     </Badge>
                   </TableCell>
